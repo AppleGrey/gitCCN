@@ -33,7 +33,7 @@ public class LoginCheckFilter implements Filter {
         //获取url
         String url = req.getRequestURI();
 
-        String urls[] = new String[] {"/login","/css/**","/fonts/**","/img/**","/js/**", "/register", "/header/**"};
+        String[] urls = new String[] {"/login","/css/**","/fonts/**","/img/**","/js/**", "/register", "/header/**"};
         boolean check = check(urls, url);
 
         //放行登录和注册请求
@@ -46,8 +46,8 @@ public class LoginCheckFilter implements Filter {
 
         //未检测到token
         if(!StringUtils.hasLength(jwt)) {
-            //res.getWriter().write("FALSE");
-            res.sendRedirect("/login");
+            res.getWriter().write("FALSE");
+            //res.sendRedirect("/login");
             return;
         }
 
@@ -56,8 +56,8 @@ public class LoginCheckFilter implements Filter {
             JwtUtils.parseJWT(jwt);
         } catch (Exception e) {
             e.printStackTrace();
-            //res.getWriter().write("FALSE");
-            res.sendRedirect("/login");
+            res.getWriter().write("FALSE");
+            //res.sendRedirect("/login");
             return;
         }
 

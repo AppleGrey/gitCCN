@@ -7,13 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+public class Group {
 
-    private int ID;
-    private String mail;
-    private String Name;
-    private String password;
-    private int role;
-    private String head;
-
+    private int uID;
+    private int wID;
 }
