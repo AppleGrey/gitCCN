@@ -3,6 +3,8 @@ package com.example.web_test.controller;
 import com.example.web_test.pojo.Result;
 import com.example.web_test.pojo.Warehouse;
 import com.example.web_test.server.WareServer;
+import com.example.web_test.utils.JwtUtils;
+import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,8 +20,11 @@ public class WareController {
     private WareServer wareServer;
 
     @GetMapping("/Wares")
-    public Result listWares() {
-        int uID = 1;
+    public Result listWares(HttpServletRequest request) {
+        int uID;
+        String jwt = request.getHeader("token");
+        Claims claims = JwtUtils.parseJWT(jwt);
+        uID = (int) claims.get("ID");
         List<Warehouse> warehouses = wareServer.getWarehouses(uID);
         return Result.success(warehouses);
     }
@@ -29,6 +34,12 @@ public class WareController {
         //Todo: 比对jwt令牌
 
         String user_id_str = request.getParameter("userID");
+        return null;
+    }
+
+    @GetMapping("/getFiles")
+    public Result getWareFiles(int wID, String path) {
+        //Todo: 判断是否有读的权限
         return null;
     }
 }
