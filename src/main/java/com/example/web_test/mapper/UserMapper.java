@@ -15,9 +15,12 @@ public interface UserMapper {
     public List<User> login(String mail, String password);
 
     @Select("select * from User where mail = #{mail}")
-    public List<User> getUser(String mail);
+    public List<User> getUsers(String mail);
 
     @Options(keyProperty = "ID", useGeneratedKeys = true)
     @Insert("insert into User(Name, mail, password) values (#{name}, #{mail}, #{password})")
     public void register(User user);
+
+    @Select("select * from User where ID=#{uID}")
+    public User getUser(int uID);
 }

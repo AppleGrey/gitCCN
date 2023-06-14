@@ -14,6 +14,6 @@ public class WebMVCConfig implements WebMvcConfigurer {
         //两个端口之间的访问就是跨域
         //要允许8080端口访问8888
         registry.addMapping("/**").allowedOrigins("http://192.168.10.51:8080/");
-        registry.addMapping("/**").allowedOrigins("http://192.168.43.83:8080/");
+//        registry.addMapping("/**").allowedOrigins("http://192.168.43.83:8080/");
     }
 }

@@ -22,7 +22,7 @@ public class LoginServerA implements LoginServer {
     @Override
     public int register(String mail, String password, String name) {
         //判断邮箱是否被注册
-        List<User> users = userMapper.getUser(mail);
+        List<User> users = userMapper.getUsers(mail);
         if(users.size() != 0) {
             return -1;
         }
