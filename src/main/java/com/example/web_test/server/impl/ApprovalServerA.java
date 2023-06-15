@@ -28,6 +28,9 @@ public class ApprovalServerA implements ApprovalServer {
     @Autowired
     private NotationMapper notationMapper;
 
+    @Autowired
+    private LiveApprMapper liveApprMapper;
+
 
     @Override
     public List<Notation> getAppr(int uID) {
@@ -49,6 +52,25 @@ public class ApprovalServerA implements ApprovalServer {
                     wareApproval.getContent(), wareApproval.getCreateTime(), uID);
             notations.add(notation);
         }
+
+        List<LiveApproval> liveApprovals = liveApprMapper.select();
+        for(LiveApproval liveApproval : liveApprovals) {
+            User user = userMapper.getUser(liveApproval.getSenderID());
+            List<Warehouse> warehouses = wareMapper.list(liveApproval.getWID());
+            String type;
+            if(liveApproval.getGrant() == 1) {
+                type = "LA-YES";
+            } else if (liveApproval.getGrant() == -1) {
+                type = "LA_NO";
+            } else {
+                type = "LA";
+            }
+            Notation notation = new Notation(liveApproval.getLaID(), type,
+                    liveApproval.isReadStat(), user.getName(), warehouses.get(0).getWName(),
+                    liveApproval.getContent(), liveApproval.getCreateTime(), uID);
+            notations.add(notation);
+        }
+
         //判断用户身份
         User u = userMapper.getUser(uID);
         if(u.getRole() == 1) {
@@ -70,7 +92,11 @@ public class ApprovalServerA implements ApprovalServer {
             }
         }
         List<Notation> notationList = notationMapper.select();
-        notations.addAll(notationList);
+        for(Notation n : notationList) {
+            if(n.getScope().compareTo("sys") == 0) {
+                notations.add(n);
+            }
+        }
         //根据时间排序
         notations.sort((n1, n2) -> n2.getSendTime().compareTo(n1.getSendTime()));
         return notations;
@@ -94,13 +120,50 @@ public class ApprovalServerA implements ApprovalServer {
         }
 
         //发送通知
-        notationMapper.createNote(receiver.getName(), warehouses.get(0).getWName(), content, sender.getID());
+        notationMapper.createNote(receiver.getName(), "sys", content, sender.getID());
+        //发送仓库通知
+        if(grant == 1) {
+            String content2 = inviter.getName() + "被成员 " + sender.getName() + " 拉入了仓库";
+            notationMapper.createNote(warehouses.get(0).getWName(), warehouses.get(0).getWName(), content2, sender.getID());
+        }
         return true;
     }
 
     @Override
     public boolean sysAppr(int saID, int grant) {
         sysApprMapper.appr(saID, grant);
+        return true;
+    }
+
+    @Override
+    public List<Notation> getWareNotations(String wName) {
+        List<Notation> wareNotations = notationMapper.getWareNote(wName);
+        wareNotations.sort((n1, n2) -> n2.getSendTime().compareTo(n1.getSendTime()));
+
+        return wareNotations;
+    }
+
+    @Override
+    public boolean liveAppr(int laID, int grant) {
+        liveApprMapper.appr(laID, grant);
+        LiveApproval liveApproval = liveApprMapper.getByLaID(laID);
+        User sender = userMapper.getUser(liveApproval.getSenderID());
+        User receiver = userMapper.getUser(liveApproval.getReceiverID());
+        List<Warehouse> warehouses = wareMapper.list(liveApproval.getWID());
+
+        String content;
+        if(grant == 1) {
+            content = "您在仓库" + warehouses.get(0).getWName() + "中申请的会议已通过，会议时间：" + liveApproval.getStartTime();
+        } else {
+            content = "您在仓库" + warehouses.get(0).getWName() + "中申请的会议被拒绝 ，会议时间：" + liveApproval.getStartTime();
+        }
+        //发送通知
+        notationMapper.createNote(receiver.getName(), "sys", content, sender.getID());
+        //发送仓库通知
+        if(grant == 1) {
+            String content2 = "成员 " + sender.getName() + " 申请在时间 " + liveApproval.getStartTime() + " 开启会议直播";
+            notationMapper.createNote(warehouses.get(0).getWName(), warehouses.get(0).getWName(), content2, sender.getID());
+        }
         return true;
     }
 }

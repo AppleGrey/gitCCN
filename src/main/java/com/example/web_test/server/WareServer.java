@@ -11,7 +11,7 @@ public interface WareServer {
 
     public Warehouse createWare(String wName, int adminID, String adminName, String describe);
 
-    public Map<String, String> getFiles(int wID, String path, String branch);
+    public List<Map<String, String>> getFiles(String wName, String path, String branch);
 
     public int invite(int sID, String mail, String wName, String content);
 
@@ -20,4 +20,8 @@ public interface WareServer {
     public int applyWare(int uID, String wName, String content);
 
     public void create(int saID);
+
+    public int applyLive(int uID, String wName, String content, String sTime);
+
+    public String getReadme(String wName);
 }

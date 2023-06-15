@@ -37,6 +37,12 @@ public class ApprovalController {
         }
     }
 
+    @PostMapping("/LiveAppr")
+    public Result liveAppr(int laID, int grant) {
+        approvalServer.liveAppr(laID, grant);
+        return Result.success();
+    }
+
     @PostMapping("/SysAppr")
     public Result sysAppr(int saID, int grant) {
         log.info("saID:" + saID + "审批结果为" + grant);
@@ -60,6 +66,13 @@ public class ApprovalController {
         List<Notation> notations = approvalServer.getAppr(uID);
         log.info("ID为" + uID + "的用户访问公告");
         return Result.success(notations);
+    }
+
+    @GetMapping("/WareNotations")
+    public Result getWareNotations(String wName) {
+        List<Notation> wareNotations = approvalServer.getWareNotations(wName);
+        log.info("仓库 " + wName + " 的公告被访问");
+        return Result.success(wareNotations);
     }
 
 }

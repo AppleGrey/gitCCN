@@ -7,7 +7,6 @@ import com.example.web_test.utils.JwtUtils;
 import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -48,14 +47,14 @@ public class WareController {
 
     @GetMapping("/getFiles")
     public Result getWareFiles(HttpServletRequest request) {
-        int wID = Integer.parseInt(request.getParameter("wID"));
+        String wName = request.getParameter("wName");
 //        int uID;
 //        String jwt = request.getHeader("token");
 //        Claims claims = JwtUtils.parseJWT(jwt);
 //        uID = (int) claims.get("ID");
         String path = request.getParameter("path");
         String branch = request.getParameter("branch");
-        Map<String, String> fileMaps = wareServer.getFiles(wID, path, branch);
+        List<Map<String, String>> fileMaps = wareServer.getFiles(wName, path, branch);
         return Result.success(fileMaps);
     }
 
@@ -105,9 +104,24 @@ public class WareController {
         return Result.error("");
     }
 
+    @PostMapping("/applyLive")
+    public Result applyLive(HttpServletRequest request) {
+        String wName = request.getParameter("wName");
+        String content = request.getParameter("content");
+        String sTime = request.getParameter("sTime");
+
+        String jwt = request.getHeader("token");
+        Claims claims = JwtUtils.parseJWT(jwt);
+        int sID = (int) claims.get("ID");
+        log.info("id为" + sID + "的用户请求在仓库" + wName + "发起会议直播");
+        wareServer.applyLive(sID, wName, content, sTime);
+        return Result.success();
+    }
+
     @GetMapping("/readme")
-    public ResponseEntity<Resource> readMe() throws FileNotFoundException {
-        File file = new File("C:\\Users\\HP\\Desktop\\readme.md");
+    public ResponseEntity<Resource> readMe(String wName) throws FileNotFoundException {
+        File file = new File(wareServer.getReadme(wName));
+        if(!file.exists()) { return null; }
         InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")

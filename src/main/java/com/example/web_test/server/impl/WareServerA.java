@@ -12,10 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class WareServerA implements WareServer {
@@ -38,6 +35,9 @@ public class WareServerA implements WareServer {
     @Autowired
     private NotationMapper notationMapper;
 
+    @Autowired
+    private LiveApprMapper liveApprMapper;
+
     @Override
     public void create(int saID) {
         SysApproval sysAppr = sysApprMapper.getSysAppr(saID);
@@ -46,7 +46,21 @@ public class WareServerA implements WareServer {
         Warehouse ware = createWare(sysAppr.getWName(), sysAppr.getSenderID(), user.getName(), sysAppr.getContent());
         groupMapper.invite(sysAppr.getSenderID(), ware.getWID());
         String content = "您的仓库:" + sysAppr.getWName() + "创建请求已通过，现在您可以通过如下url克隆: git@123.57.181.79:" + ware.getWPath();
-        notationMapper.createNote("系统", sysAppr.getWName(), content, sysAppr.getSenderID());
+        notationMapper.createNote("系统", "sys", content, sysAppr.getSenderID());
+
+    }
+
+    @Override
+    public int applyLive(int uID, String wName, String content, String sTime) {
+        List<Warehouse> warehouses = wareMapper.list_name(wName);
+        liveApprMapper.initiate(uID, warehouses.get(0).getAdminID(), warehouses.get(0).getWID(), content, sTime);
+        return 0;
+    }
+
+    @Override
+    public String getReadme(String wName) {
+        List<Warehouse> warehouses = wareMapper.list_name(wName);
+        return warehouses.get(0).getWPath() + "/readme.md";
     }
 
     @Override
@@ -63,7 +77,7 @@ public class WareServerA implements WareServer {
     @Override
     public Warehouse createWare(String wName, int adminID, String adminName, String describe) {
         //分配仓库
-        String rootPath = "D:/Warehouse/";
+        String rootPath = "/home/gitcnn/warehouse/";
         rootPath += "user_" + adminID + "/";
         rootPath += wName + ".git";
         try {
@@ -82,52 +96,83 @@ public class WareServerA implements WareServer {
     }
 
     @Override
-    public Map<String, String> getFiles(int wID, String path, String branch) {
-        List<Warehouse> wareList = wareMapper.list(wID);
+    public List<Map<String, String>> getFiles(String wName, String path, String branch) {
+        List<Warehouse> wareList = wareMapper.list_name(wName);
         String warePath = wareList.get(0).getWPath();
         List<String> fileList = null;
         try {
-            fileList = JGitUtils.getFiles("D:\\jgitTest\\test1", branch);
+            fileList = JGitUtils.getFiles(warePath, branch);
         } catch (IOException | GitAPIException e) {
             throw new RuntimeException(e);
         }
 
-        Map<String, String> fileMaps = new HashMap<>();
+        Set<Map<String, String>> fileSet = new HashSet<>();
 
-        String[] pathDir = path.split("/");
-
+        String[] pathDirs = path.split("/");
+        List<String> pathDir = new ArrayList<>(Arrays.asList(pathDirs));
+        if(pathDirs[pathDirs.length - 1].compareTo("..") == 0) {
+            pathDir.remove(pathDir.size() - 1);
+            pathDir.remove(pathDir.size() - 1);
+        }
+        StringBuilder filePath = new StringBuilder();
+        for(String p : pathDir) {
+            filePath.append(p).append("/");
+        }
         for(String l : fileList) {
 //            if(l.contains("/")) {
 //                fileMaps.put(l, "dir");
 //            } else {
 //                fileMaps.put(l, "file");
 //            }
+            Map<String, String> fileMaps = new HashMap<>();
             String[] names = l.split("/");
             if(path.compareTo("") == 0) {
+                fileMaps.put("fileName", names[0]);
+                fileMaps.put("path", "");
                 if(names.length == 1) {
-                    fileMaps.put(names[0], "file");
+                    fileMaps.put("type", "file");
                 } else {
-                    fileMaps.put(names[0], "dir");
+                    fileMaps.put("type", "dir");
                 }
+                fileSet.add(fileMaps);
                 continue;
             }
             boolean isOK = true;
-            for(int i = 0; i < pathDir.length; i++) {
-                if(i < names.length && names[i].compareTo(pathDir[i]) != 0) {
+            for(int i = 0; i < pathDir.size(); i++) {
+                if(i < names.length && names[i].compareTo(pathDir.get(i)) != 0) {
                     isOK = false;
                     break;
                 }
             }
             if(isOK) {
-                if(names.length == pathDir.length + 1) {
-                    fileMaps.put(names[pathDir.length], "file");
+                fileMaps.put("fileName", names[pathDir.size()]);
+                fileMaps.put("path", filePath.toString());
+                if(names.length == pathDir.size() + 1) {
+                    fileMaps.put("type", "file");
                 } else {
-                    fileMaps.put(names[pathDir.length], "dir");
+                    fileMaps.put("type", "dir");
                 }
+                fileSet.add(fileMaps);
             }
         }
-
-        return fileMaps;
+        List<Map<String, String>> files = new ArrayList<>(fileSet);
+        files.sort((o1, o2) -> {
+            if(o1.get("type").compareTo("dir") == 0 && o2.get("type").compareTo("file") == 0) {
+                return -1;
+            }
+            if(o2.get("type").compareTo("dir") == 0 && o1.get("type").compareTo("file") == 0) {
+                return 1;
+            }
+            return o1.get("fileName").compareTo(o2.get("fileName"));
+        });
+        if(pathDir.size() != 0 && path.compareTo("") != 0) {
+            Map<String, String> a = new HashMap<>();
+            a.put("fileName", "..");
+            a.put("path", filePath.toString());
+            a.put("type", "dir");
+            files.add(0, a);
+        }
+        return files;
     }
 
     @Override
@@ -156,7 +201,7 @@ public class WareServerA implements WareServer {
         //通知被邀请人
         User admin = userMapper.getUser(sID);
         String noteContent = "你被" + admin.getName() + "拉入了仓库：" + wName;
-        notationMapper.createNote(users.get(0).getName(), wName, noteContent, iID);
+        notationMapper.createNote(users.get(0).getName(), "sys", noteContent, iID);
         return 0;
     }
 

@@ -19,4 +19,5 @@ public class Warehouse {
     private LocalDateTime cTime;
     private LocalDateTime uTime;
     private String describe;
+
 }

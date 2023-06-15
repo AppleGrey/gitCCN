@@ -16,4 +16,6 @@ public interface NotationMapper {
     @Insert("insert into Notation(senderName, scope, content, receiverID) VALUES (#{senderName}, #{scope}, #{content}, #{receiverID})")
     public void createNote(String senderName, String scope, String content, int receiverID);
 
+    @Select("select * from Notation where scope=#{wName}")
+    public List<Notation> getWareNote(String wName);
 }

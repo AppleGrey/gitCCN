@@ -89,6 +89,7 @@ class WebTestApplicationTests {
             treeWalk.setRecursive(true);
             while (treeWalk.next()) {
                 System.out.println(treeWalk.getPathString());
+                System.out.println(treeWalk.getFileMode());
             }
         }
 //        JSONObject json = new JSONObject();
