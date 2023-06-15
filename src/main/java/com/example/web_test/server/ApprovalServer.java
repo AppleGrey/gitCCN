@@ -10,4 +10,5 @@ public interface ApprovalServer {
 
     public boolean wareAppr(int waID, int grant);
 
+    public boolean sysAppr(int saID, int grant);
 }

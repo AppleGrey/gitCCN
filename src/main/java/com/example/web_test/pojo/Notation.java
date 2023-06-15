@@ -19,5 +19,6 @@ public class Notation {
     private String scope;//公告范围
     private String content;//公告内容
     private LocalDateTime sendTime;//发送时间
+    private int receiverID;
 
 }

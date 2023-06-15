@@ -11,9 +11,9 @@ import java.util.List;
 @Mapper
 public interface WareApprMapper {
 
-    @Insert("insert into wareApproval(senderID, receiverID, wID, type, content) " +
-            "values (#{sID}, #{rID}, #{wID}, #{type}, #{content})")
-    public void initiate(int sID, int rID, int wID, int type, String content);
+    @Insert("insert into wareApproval(senderID, receiverID, wID, type, content, inviterID) " +
+            "values (#{sID}, #{rID}, #{wID}, #{type}, #{content}, #{iID})")
+    public void initiate(int sID, int rID, int wID, int type, String content, int iID);
 
     @Select("select * from wareApproval where senderID=#{sID} and receiverID=#{rID} and wID=#{wID}")
     public List<WareApproval> selects(int sID, int rID, int wID);

@@ -2,6 +2,7 @@ package com.example.web_test;
 
 import com.example.web_test.mapper.UserMapper;
 import com.example.web_test.pojo.User;
+import com.example.web_test.utils.JGitUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.FileMode;
@@ -109,5 +110,17 @@ class WebTestApplicationTests {
 //            }
 //        }
 //        System.out.println(json);
+    }
+
+    @Test
+    public void createResp() throws GitAPIException {
+        Git git = JGitUtils.openRpo("D:/Warehouse/test/");
+        git.getRepository().getConfig().getString("remote", "origin", "url");
+        System.out.println(git.getRepository().getConfig());
+
+//        String gitPath = "D:/Warehouse/test/";
+//        Git git = Git.init().setDirectory(new File(gitPath)).call();
+//        String url = git.getRepository().getConfig().getString("origin");
+//        System.out.println(url);
     }
 }

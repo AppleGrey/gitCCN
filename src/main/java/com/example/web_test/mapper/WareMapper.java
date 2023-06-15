@@ -15,10 +15,13 @@ public interface WareMapper {
     @Select("select * from warehouse where wID = #{wID}")
     public List<Warehouse> list(int wID);
 
+    @Select("select * from warehouse where wName=#{wName}")
+    public List<Warehouse> list_name(String wName);
+
     @Select("select * from warehouse where adminID = #{adminID} and wName = #{wName}")
     public List<Warehouse> isAdmin(String wName, int adminID);
 
-    @Options(keyProperty = "ID", useGeneratedKeys = true)
+    @Options(keyProperty = "wID", useGeneratedKeys = true)
     @Insert("insert into warehouse(wName, adminID, cTime, uTime, wPath) " +
             "values (#{wName}, #{adminID}, #{cTime}, #{uTime}, #{wPath})")
     public void insertWare(Warehouse ware);

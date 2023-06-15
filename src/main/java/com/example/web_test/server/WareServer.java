@@ -18,4 +18,6 @@ public interface WareServer {
     public void approval(int waID);
 
     public int applyWare(int uID, String wName, String content);
+
+    public void create(int saID);
 }

@@ -7,9 +7,18 @@ import com.example.web_test.utils.JwtUtils;
 import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.web.ServerProperties;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.Map;
 
@@ -44,7 +53,9 @@ public class WareController {
 //        String jwt = request.getHeader("token");
 //        Claims claims = JwtUtils.parseJWT(jwt);
 //        uID = (int) claims.get("ID");
-        Map<String, String> fileMaps = wareServer.getFiles(wID, "D:\\jgitTest\\test1", "master");
+        String path = request.getParameter("path");
+        String branch = request.getParameter("branch");
+        Map<String, String> fileMaps = wareServer.getFiles(wID, path, branch);
         return Result.success(fileMaps);
     }
 
@@ -58,8 +69,14 @@ public class WareController {
         String wName = request.getParameter("wName");
         String description = request.getParameter("description");
 
-
-        return null;
+        int i = wareServer.applyWare(uID, wName, description);
+        log.info("ID为" + uID + "的用户申请创建仓库:" + wName);
+        if(i == -1) {
+            log.info("仓库名重复");
+            return Result.error("Name has been used");
+        }
+        log.info("申请成功");
+        return Result.success();
     }
 
     @PostMapping("/invite")
@@ -87,4 +104,17 @@ public class WareController {
         }
         return Result.error("");
     }
+
+    @GetMapping("/readme")
+    public ResponseEntity<Resource> readMe() throws FileNotFoundException {
+        File file = new File("C:\\Users\\HP\\Desktop\\readme.md");
+        InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
+                .contentLength(file.length())
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
+    }
+
+
 }

@@ -1,6 +1,7 @@
 package com.example.web_test.filter;
 
 import com.example.web_test.utils.JwtUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.StringUtils;
 
@@ -10,7 +11,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-// @WebFilter(urlPatterns = "/*")
+@Slf4j
+//@WebFilter(urlPatterns = "/*")
 public class LoginCheckFilter implements Filter {
 
     public static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
