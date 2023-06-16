@@ -64,6 +64,36 @@ public class WareServerA implements WareServer {
     }
 
     @Override
+    public String getUrl(String wName) {
+        List<Warehouse> warehouses = wareMapper.list_name(wName);
+        return "git@123.57.181.79:" + warehouses.get(0).getWPath();
+    }
+
+    @Override
+    public List<Member> getMembers(String wName) {
+        List<Warehouse> warehouses = wareMapper.list_name(wName);
+        List<Group> members = groupMapper.getMembers(warehouses.get(0).getWID());
+        List<Member> memberList = new ArrayList<>();
+        for (Group g : members) {
+            User user = userMapper.getUser(g.getUID());
+            boolean isAdmin = false;
+            if(user.getID() == warehouses.get(0).getAdminID()) {
+                isAdmin = true;
+            }
+
+            Member member = new Member(user.getName(), user.getMail(), isAdmin);
+            memberList.add(member);
+        }
+        return memberList;
+    }
+
+    @Override
+    public List<String> getBranch(String wName) {
+        List<Warehouse> warehouses = wareMapper.list_name(wName);
+        return JGitUtils.getBranches(warehouses.get(0).getWPath());
+    }
+
+    @Override
     public List<Warehouse> getWarehouses(int uID) {
         List<Warehouse> wareList = new ArrayList<>();
         List<Group> groups = groupMapper.getWares(uID);

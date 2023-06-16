@@ -1,5 +1,7 @@
 package com.example.web_test.server;
 
+import com.example.web_test.pojo.Member;
+import com.example.web_test.pojo.User;
 import com.example.web_test.pojo.Warehouse;
 
 import java.util.List;
@@ -24,4 +26,10 @@ public interface WareServer {
     public int applyLive(int uID, String wName, String content, String sTime);
 
     public String getReadme(String wName);
+
+    public String getUrl(String wName);
+
+    public List<Member> getMembers(String wName);
+
+    public List<String> getBranch(String wName);
 }

@@ -3,6 +3,7 @@ package com.example.web_test.utils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.treewalk.TreeWalk;
@@ -44,4 +45,31 @@ public class JGitUtils {
 
         return fileList;
     }
+
+    public static List<String> getBranches(String path) {
+        List<String> branches = new ArrayList<>();
+        try {
+            // Open the repository using the path
+            Git git = Git.open(new java.io.File(path));
+            // Get the list of references to the branches
+            List<Ref> refs = git.branchList().call();
+            // Loop through the references and extract the branch names
+            for (Ref ref : refs) {
+                // Get the full name of the branch, such as "refs/heads/master"
+                String fullName = ref.getName();
+                // Get the short name of the branch, such as "master"
+                String shortName = fullName.substring(fullName.lastIndexOf("/") + 1);
+                // Add the short name to the list
+                branches.add(shortName);
+            }
+            // Close the repository
+            git.close();
+        } catch (Exception e) {
+            // Handle any exceptions that may occur
+            e.printStackTrace();
+        }
+        // Return the list of branch names
+        return branches;
+    }
+
 }

@@ -1,5 +1,6 @@
 package com.example.web_test.controller;
 
+import com.example.web_test.pojo.Member;
 import com.example.web_test.pojo.Result;
 import com.example.web_test.pojo.Warehouse;
 import com.example.web_test.server.WareServer;
@@ -130,5 +131,21 @@ public class WareController {
                 .body(resource);
     }
 
+    @GetMapping("/getUrl")
+    public Result getUrl(String wName) {
+        String url = wareServer.getUrl(wName);
+        return Result.success(url);
+    }
+
+    @GetMapping("/getMembers")
+    public Result getMembers(String wName) {
+        List<Member> members = wareServer.getMembers(wName);
+        return Result.success(members);
+    }
+
+    @GetMapping("/getBranch")
+    public Result getBranch(String wName) {
+        return Result.success(wareServer.getBranch(wName));
+    }
 
 }

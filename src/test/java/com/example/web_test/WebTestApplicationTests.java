@@ -124,4 +124,10 @@ class WebTestApplicationTests {
 //        String url = git.getRepository().getConfig().getString("origin");
 //        System.out.println(url);
     }
+
+    @Test
+    public void getBranch() {
+//        List<String> branches = JGitUtils.getBranches("D:\\jgitTest\\test1");
+//        System.out.println(branches);
+    }
 }
